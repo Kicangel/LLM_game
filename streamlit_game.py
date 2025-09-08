@@ -674,6 +674,7 @@ C와의 관계에 대한 표현 과장이 들통나기 쉬움(‘오랜 친구�
     )
     return json.loads(raw_json)
 
+
 # --------------------------------
 # 앱 시작
 # --------------------------------
@@ -691,130 +692,214 @@ tabs = st.tabs(ROOMS)
 for room_id, tab in zip(ROOMS, tabs):
     with tab:
         if room_id == ROOMS[0]:
+            st.markdown("""
+            # 사건 개요
+            한 저택에서 살인 사건이 발생했다.
 
-        st.subheader(f"Chat: {room_id}")
+            ## 주요 장소
+            - 현관
+            - 2층 서재
+            - 부엌
 
-        # 1) 입력창 클리어 플래그 체크 (위젯 생성 전에 처리!)
-        clear_key = f"__clear_input_{room_id}"
-        if st.session_state.get(clear_key):
-            st.session_state.pop(f"chat_input_{room_id}", None)
-            st.session_state[clear_key] = False
-
-        # 2) 기존 메시지 렌더 (UI 메시지만)
-        for m in st.session_state.rooms[room_id]["messages"]:
-            role = m["role"]
-            speaker = m.get("speaker")
-            if role == "user":
-                with st.chat_message("user"):
-                    st.markdown(m["content"])
-            else:
-                with st.chat_message("assistant"):
-                    name_label = f"**{speaker}:** " if speaker in {"A", "B", "C", "D", "E"} else ""
-                    st.markdown(name_label + m["content"])
-
-        # 3) 입력
-        user_msg = st.chat_input("심문을 입력하세요", key=f"chat_input_{room_id}")
-        if user_msg:
-            if room_id == 'room A':
-                # 3-1) 사용자 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
-                )
-                # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
-                payload = game_A_prompt(user_msg, room_id)
-                content_md, speaker, utt_type, _ = parse_llm_output(payload)
-                # 3-3) 어시스턴트 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {
-                        "role": "assistant",
-                        "speaker": speaker,
-                        "content": content_md,
-                        "ts": datetime.now().isoformat(),
-                    }
-                )
-                # 3-4) 다음 런에서 입력창 비우기
-                st.session_state[clear_key] = True
-                st.rerun()
+            ## 공개 증거
+            1) 닦인 촛대  
+            2) 젖은 고무장갑
             
-            if room_id == 'room B':
-                # 3-1) 사용자 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
-                )
-                # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
-                payload = game_B_prompt(user_msg, room_id)
-                content_md, speaker, utt_type, _ = parse_llm_output(payload)
-                # 3-3) 어시스턴트 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {
-                        "role": "assistant",
-                        "speaker": speaker,
-                        "content": content_md,
-                        "ts": datetime.now().isoformat(),
-                    }
-                )
-                # 3-4) 다음 런에서 입력창 비우기
-                st.session_state[clear_key] = True
-                st.rerun()
+            ## 규칙
+            1) 당신은 5명의 용의자 (A,B,C,D,E)를 심문하여 살인자를 찾아야합니다
+            2) 각각의 용의자들은 3개의 핵심 진술을 가지고 있으며, 이 중 2가지는 참 한 가지는 거짓입니다
+            3) 심문을 통해 핵심 진술 3가지를 찾고 참, 거짓을 판별하여 살인자를 찾아야합니다
 
-            if room_id == 'room C':
-                # 3-1) 사용자 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
-                )
-                # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
-                payload = game_C_prompt(user_msg, room_id)
-                content_md, speaker, utt_type, _ = parse_llm_output(payload)
-                # 3-3) 어시스턴트 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {
-                        "role": "assistant",
-                        "speaker": speaker,
-                        "content": content_md,
-                        "ts": datetime.now().isoformat(),
-                    }
-                )
-                # 3-4) 다음 런에서 입력창 비우기
-                st.session_state[clear_key] = True
-                st.rerun()
+            """)
+        
+        elif room_id == ROOMS[-2]:
 
-            if room_id == 'room D':
-                # 3-1) 사용자 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
-                )
-                # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
-                payload = game_D_prompt(user_msg, room_id)
-                content_md, speaker, utt_type, _ = parse_llm_output(payload)
-                # 3-3) 어시스턴트 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {
-                        "role": "assistant",
-                        "speaker": speaker,
-                        "content": content_md,
-                        "ts": datetime.now().isoformat(),
-                    }
-                )
-                # 3-4) 다음 런에서 입력창 비우기
-                st.session_state[clear_key] = True
-                st.rerun()
-            if room_id == 'room E':
-                # 3-1) 사용자 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
-                )
-                # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
-                payload = game_E_prompt(user_msg, room_id)
-                content_md, speaker, utt_type, _ = parse_llm_output(payload)
-                # 3-3) 어시스턴트 발화 UI 저장
-                st.session_state.rooms[room_id]["messages"].append(
-                    {
-                        "role": "assistant",
-                        "speaker": speaker,
-                        "content": content_md,
-                        "ts": datetime.now().isoformat(),
-                    }
-                )
-                # 3-4) 다음 런에서 입력창 비우기
-                st.session_state[clear_key] = True
-                st.rerun()
+                    st.title("메모장 (싱글)")
+
+                    # 초기값
+                    if "note_text" not in st.session_state:
+                        st.session_state.note_text = "여기에 메모를 적으세요."
+
+                    # 편집
+                    text = st.text_area("내용 (Markdown 가능)", value=st.session_state.note_text, height=300)
+
+                    if st.button("저장"):
+                        st.session_state.note_text = text
+                        st.success("저장 완료!")
+
+
+                    st.divider()
+                    st.subheader("미리보기")
+                    st.markdown(text)
+        
+        elif room_id == ROOMS[-1]:
+            choice = st.radio("범인을 선택하세요", ["A","B","C","D","E"], horizontal=True)
+            if st.button("제출"):
+                if choice == "B":
+                    st.success("정답입니다! 범인은 B 입니다.")
+                else:
+                    st.error("오답입니다.")
+
+        elif room_id == ROOMS[-3]:
+            st.subheader("힌트")
+            if "hint1_open" not in st.session_state:
+                st.session_state.hint1_open = False
+            if "hint2_open" not in st.session_state:
+                st.session_state.hint2_open = False
+
+            col1, col2 = st.columns([1,1])
+            with col1:
+                if st.button("힌트 1 열기" if not st.session_state.hint1_open else "힌트 1 닫기"):
+                    st.session_state.hint1_open = not st.session_state.hint1_open
+                    st.rerun()
+            with col2:
+                if st.button("힌트 2 열기" if not st.session_state.hint2_open else "힌트 2 닫기"):
+                    st.session_state.hint2_open = not st.session_state.hint2_open
+                    st.rerun()
+
+            # 힌트 렌더 (마크다운)
+            if st.session_state.hint1_open:
+                st.markdown("### 힌트 1")
+                st.markdown("""
+    참, 거짓 문제 해결의 기본적인 아이디어는 참인 진술과 거짓인 진술 간에는 모순이 발생한다는 점을 이용한다.
+    제시된 진술이 모두 참이라고 가정하고서 모순이 발생하는 진술을 찾아 문제를 해결한다. 특히 제시된 정보가 상당히 제한적일 때, 직접 추론을 통해서는 너무나 많은 경우를 고려해야한다면, 간접 추론을 통한 문제 해결이 더 적절할 수 있다
+    예를 들어, 네 사람 중에서 진실을 말하는 사람이 3명, 거짓을 말하는 사람이 1명이 있다고 할 때, 거짓말하는 사람을 찾아 가는 방법은 진술이 모두 참이라고 가정하고서, 진술 간의 조화여부를 검토해 다른 셋과 조화를 이를 수 없거나 제시된 조건에 부합하지 않는 진술을 찾는 것이다
+
+                """.strip())
+
+            if st.session_state.hint2_open:
+                st.markdown("### 힌트 2")
+                st.markdown("""
+    모든 용의자가 자신이 범인이 아니라고 한다. 즉 이 중 한 명은 거짓이다
+                """.strip())
+
+        else:
+            st.subheader(f"Chat: {room_id}")
+            # 1) 입력창 클리어 플래그 체크 (위젯 생성 전에 처리!)
+            clear_key = f"__clear_input_{room_id}"
+            if st.session_state.get(clear_key):
+                st.session_state.pop(f"chat_input_{room_id}", None)
+                st.session_state[clear_key] = False
+
+            # 2) 기존 메시지 렌더 (UI 메시지만)
+            for m in st.session_state.rooms[room_id]["messages"]:
+                role = m["role"]
+                speaker = m.get("speaker")
+                if role == "user":
+                    with st.chat_message("user"):
+                        st.markdown(m["content"])
+                else:
+                    with st.chat_message("assistant"):
+                        name_label = f"**{speaker}:** " if speaker in {"A", "B", "C", "D", "E"} else ""
+                        st.markdown(name_label + m["content"])
+
+            # 3) 입력
+            user_msg = st.chat_input("심문을 입력하세요", key=f"chat_input_{room_id}")
+            if user_msg:
+                if room_id == 'room A':
+                    # 3-1) 사용자 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
+                    )
+                    # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
+                    payload = game_A_prompt(user_msg, room_id)
+                    content_md, speaker, utt_type, _ = parse_llm_output(payload)
+                    # 3-3) 어시스턴트 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {
+                            "role": "assistant",
+                            "speaker": speaker,
+                            "content": content_md,
+                            "ts": datetime.now().isoformat(),
+                        }
+                    )
+                    # 3-4) 다음 런에서 입력창 비우기
+                    st.session_state[clear_key] = True
+                    st.rerun()
+                
+                if room_id == 'room B':
+                    # 3-1) 사용자 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
+                    )
+                    # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
+                    payload = game_B_prompt(user_msg, room_id)
+                    content_md, speaker, utt_type, _ = parse_llm_output(payload)
+                    # 3-3) 어시스턴트 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {
+                            "role": "assistant",
+                            "speaker": speaker,
+                            "content": content_md,
+                            "ts": datetime.now().isoformat(),
+                        }
+                    )
+                    # 3-4) 다음 런에서 입력창 비우기
+                    st.session_state[clear_key] = True
+                    st.rerun()
+
+                if room_id == 'room C':
+                    # 3-1) 사용자 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
+                    )
+                    # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
+                    payload = game_C_prompt(user_msg, room_id)
+                    content_md, speaker, utt_type, _ = parse_llm_output(payload)
+                    # 3-3) 어시스턴트 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {
+                            "role": "assistant",
+                            "speaker": speaker,
+                            "content": content_md,
+                            "ts": datetime.now().isoformat(),
+                        }
+                    )
+                    # 3-4) 다음 런에서 입력창 비우기
+                    st.session_state[clear_key] = True
+                    st.rerun()
+
+                if room_id == 'room D':
+                    # 3-1) 사용자 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
+                    )
+                    # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
+                    payload = game_D_prompt(user_msg, room_id)
+                    content_md, speaker, utt_type, _ = parse_llm_output(payload)
+                    # 3-3) 어시스턴트 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {
+                            "role": "assistant",
+                            "speaker": speaker,
+                            "content": content_md,
+                            "ts": datetime.now().isoformat(),
+                        }
+                    )
+                    # 3-4) 다음 런에서 입력창 비우기
+                    st.session_state[clear_key] = True
+                    st.rerun()
+                if room_id == 'room E':
+                    # 3-1) 사용자 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {"role": "user", "content": user_msg, "ts": datetime.now().isoformat()}
+                    )
+                    # 3-2) LLM 호출 → payload(dict) → 문자열/스피커 추출
+                    payload = game_E_prompt(user_msg, room_id)
+                    content_md, speaker, utt_type, _ = parse_llm_output(payload)
+                    # 3-3) 어시스턴트 발화 UI 저장
+                    st.session_state.rooms[room_id]["messages"].append(
+                        {
+                            "role": "assistant",
+                            "speaker": speaker,
+                            "content": content_md,
+                            "ts": datetime.now().isoformat(),
+                        }
+                    )
+                    # 3-4) 다음 런에서 입력창 비우기
+                    st.session_state[clear_key] = True
+                    st.rerun()
+
+                
+                
+
